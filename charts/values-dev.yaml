@@ -1,0 +1,24 @@
+dns_suffix: platdev.vtxdev.net
+env: dev
+ingress:
+  tls:
+    - hosts:
+      - <your service app>-dev.platdev.vtxdev.net
+pod_scaling:
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPU: 70
+database:
+  connection:
+micronaut:
+  environments: dev
+cfs_permissions_service:
+  image:
+    tag: latest
+  resources:
+    requests:
+      memory: "3Gi"
+      cpu: "100m"
+    limits:
+      memory: "6Gi"
+      cpu: "2000m"

@@ -1,0 +1,42 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.app_name }}
+{{- if .Values.argocd_ingress_annotations }}
+  annotations:
+{{ toYaml .Values.argocd_ingress_annotations | indent 4 }}
+{{- end }}
+spec:
+  rules:
+    - host: {{ .Values.app_name }}-{{ .Values.env }}.{{ .Values.dns_suffix }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.path }}
+            pathType: {{ .Values.ingress.pathtype }}
+            backend:
+              service:
+                name: {{ .Values.app_name }}
+                port:
+                  number: {{ .Values.service.externalPort }}
+{{- if .Values.ingress.use_vanity_ingress }}
+    - host: {{ .Values.app_name }}.{{ .Values.dns_suffix }}
+      http:
+        paths:
+          - path: {{ .Values.ingress.path }}
+            pathType: {{ .Values.ingress.pathtype }}
+            backend:
+              service:
+                name: {{ .Values.app_name }}
+                port:
+                  number: {{ .Values.service.externalPort }}
+{{- end }}
+{{ if .Values.ingress.tls }}
+  tls:
+    - hosts:
+      - {{ .Values.app_name }}-{{ .Values.env }}.{{ .Values.dns_suffix }}
+{{- if .Values.ingress.use_vanity_ingress }}
+      - {{ .Values.app_name }}.{{ .Values.dns_suffix }}
+{{- end }}
+{{ end }}
+{{- end }}

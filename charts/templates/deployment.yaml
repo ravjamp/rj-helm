@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app_name }}
+  labels:
+    app: {{ .Values.app_name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.app_name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app_name }}
+    spec:
+      serviceAccountName: {{ .Values.app_name }}
+      imagePullSecrets:
+        - name: artifactory-cred
+      containers:
+        - name: {{ .Values.app_name }}
+          image: "{{ .Values.cfs_permissions_service.image.repository }}:{{ .Values.cfs_permissions_service.image.tag }}"
+          ports:
+          - containerPort: {{ .Values.service.internalPort }}
+          resources:
+            requests:
+              memory: {{ .Values.cfs_permissions_service.resources.requests.memory }}
+              cpu: {{ .Values.cfs_permissions_service.resources.requests.cpu }}
+            limits:
+              memory: {{ .Values.cfs_permissions_service.resources.limits.memory }}
+              cpu: {{ .Values.cfs_permissions_service.resources.limits.cpu }}
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.health.readinessProbe.path }}
+              port: {{ .Values.service.internalPort }}
+            initialDelaySeconds: 40
+            timeoutSeconds: 10
+            periodSeconds: 3
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.health.livenessProbe.path }}
+              port: {{ .Values.service.internalPort }}
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 8
+            failureThreshold: 1
+          env:
+          - name: "DATABASE_USERNAME"
+            valueFrom:
+              secretKeyRef:
+                key:  username
+                name: {{ .Values.app_name }}-auth
+          - name: "DATABASE_PASSWORD"
+            valueFrom:
+              secretKeyRef:
+                key:  password
+                name: {{ .Values.app_name }}-auth
+          - name: "DATABASE_CONNECTION"
+            value: {{ .Values.database.connection }}
+          - name: "TEST_ENVIRONMENTS" #  If needed
+            value: {{ .Values.<teyp of your app framework>.environments }} # Add Your app framework name example: micronaut

@@ -1,0 +1,28 @@
+app_name:
+service:
+  type: NodePort
+  externalPort: 80
+  internalPort: 8080
+  databasePort: 3306
+ingress:
+  enabled: true
+  use_vanity_ingress: false
+  path: /*
+  pathtype: Prefix
+pod_scaling:
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPU: 70
+database: {}
+<your frame work type>: {} # Add Your app framework name example: micronaut
+health:
+  readinessProbe:
+    path: /health/readiness
+  livenessProbe:
+    path: /health
+service_name: # ADD Your app name
+  image:
+    repository:
+  resources:
+    requests: {}
+    limits: {}  
