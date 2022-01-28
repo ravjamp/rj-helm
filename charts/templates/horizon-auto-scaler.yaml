@@ -1,12 +1,23 @@
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ .Values.app_name }}
+  name: {{ .Values.name | default .Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/instance: mysql-abcxzy
+    app.kubernetes.io/version: {{ .Chart.appVersion }}
+    app.kubernetes.io/project: "CI/CD Engineering"
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/created-by: controller-manager
+    vtx-cfs/stack: green
+    vtx-cfs/environment: dev
+    vtx-cfs/status: live
 spec:
   minReplicas: {{ .Values.pod_scaling.minReplicas }}
   maxReplicas: {{ .Values.pod_scaling.maxReplicas }}
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ .Values.app_name }}
+    name: {{ .Values.name | default .Release.Name }}
   targetCPUUtilizationPercentage: {{ .Values.pod_scaling.targetCPU }}
+  

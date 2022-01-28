@@ -7,3 +7,4 @@ keywords:
 sources:
   - <Your service repo url>
 engine: gotpl
+appVersion: 1.0.0
