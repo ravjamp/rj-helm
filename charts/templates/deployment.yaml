@@ -3,15 +3,15 @@ kind: Deployment
 metadata:
   name: {{ .Values.name | default .Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ .Values.name | default .Release.Name }}
     app.kubernetes.io/instance: mysql-abcxzy
     app.kubernetes.io/version: {{ .Chart.appVersion }}
     app.kubernetes.io/project: "CI/CD Engineering"
     app.kubernetes.io/managed-by: helm
     app.kubernetes.io/created-by: controller-manager
-    vtx-cfs/stack: green
-    vtx-cfs/environment: dev
-    vtx-cfs/status: live
+    vtx-cfs/stack: {{ .Values.stack }}
+    vtx-cfs/environment: {{ .Values.environment }}
+    vtx-cfs/status: {{ .Values.status }}
 spec:
   selector:
     matchLabels:
@@ -57,13 +57,13 @@ spec:
             valueFrom:
               secretKeyRef:
                 key:  username
-                name: {{ .Release.Name }}-auth
+                name: {{ .Values.name | default .Release.Name }}-auth
           - name: "DATABASE_PASSWORD"
             valueFrom:
               secretKeyRef:
                 key:  password
-                name: {{ .Release.Name }}-auth
+                name: {{ .Values.name | default .Release.Name }}-auth
           - name: "DATABASE_CONNECTION"
             value: {{ .Values.database.connection }}
           - name: "TEST_ENVIRONMENTS" #  If needed
-            value: {{ .Values.<teyp of your app framework>.environments }} # Add Your app framework name example: micronaut
+            value: {{ .Values.micronaut.environments }} # Add Your app framework name example: micronaut

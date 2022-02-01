@@ -3,15 +3,15 @@ kind: Service
 metadata:
   name: {{ .Values.name | default .Release.Name }}
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ .Values.name | default .Release.Name }}
     app.kubernetes.io/instance: mysql-abcxzy
     app.kubernetes.io/version: {{ .Chart.appVersion }}
     app.kubernetes.io/project: "CI/CD Engineering"
     app.kubernetes.io/managed-by: helm
     app.kubernetes.io/created-by: controller-manager
-    vtx-cfs/stack: green
-    vtx-cfs/environment: dev
-    vtx-cfs/status: live
+    vtx-cfs/stack: {{ .Values.stack }}
+    vtx-cfs/environment: {{ .Values.environment }}
+    vtx-cfs/status: {{ .Values.status }}
 {{- if .Values.argocd_service_annotations }}
   annotations:
 {{ toYaml .Values.argocd_service_annotations | indent 4 }}
@@ -23,4 +23,4 @@ spec:
     targetPort: {{ .Values.service.internalPort }}
     protocol: TCP
   selector:
-    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ .Values.name | default .Release.Name }}

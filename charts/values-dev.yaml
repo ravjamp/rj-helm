@@ -1,15 +1,15 @@
 dns_suffix: platdev.vtxdev.net
-env: dev
+environment: dev
 ingress:
-  tls:
-    - hosts:
-      - <your service app>-dev.platdev.vtxdev.net
+  use_vanity_ingress: true
+  vanity_ingress_url: cfs_permissions_service-dev.platdev.vtxdev.net
+  pathType: ImplementationSpecific
 pod_scaling:
-  minReplicas: 1
-  maxReplicas: 1
+  minReplicas: 10
+  maxReplicas: 30
   targetCPU: 70
 database:
-  connection:
+  connection: jdbc:mysql://dev-shared-cluster-aurora-mysql-primary-cluster.cluster-ckd2evw9znz4.us-east-2.rds.amazonaws.com/vtxauthd?useUnicode=true&characterEncoding=UTF-8&enabledTLSProtocols=TLSv1.2
 micronaut:
   environments: dev
 cfs_permissions_service:
@@ -22,3 +22,31 @@ cfs_permissions_service:
     limits:
       memory: "6Gi"
       cpu: "2000m"
+stack: green
+status: live
+micronaut:
+  environments: dev
+cfs_permissions_service:
+  image:
+    tag: "1.1.26"
+  resources:
+    requests:
+      memory: "3Gi"
+      cpu: "100m"
+    limits:
+      memory: "6Gi"
+      cpu: "2000m"
+health:
+  readinessProbe:
+    initialDelaySeconds: 40
+    timeoutSeconds: 10
+    periodSeconds: 3
+    failureThreshold: 5
+  livenessProbe:
+    initialDelaySeconds: 60
+    timeoutSeconds: 5
+    periodSeconds: 8
+    failureThreshold: 1 
+serviceAccount:
+  annotations: 
+    roleArn: arn:aws:iam::149745434630:role/eks-dev-vertex-auth-service-irsa

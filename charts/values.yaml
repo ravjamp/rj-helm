@@ -14,7 +14,7 @@ pod_scaling:
   maxReplicas: 1
   targetCPU: 70
 database: {}
-<your frame work type>: {} # Add Your app framework name example: micronaut
+micronaut: {} # Add Your app framework name example: micronaut
 health:
   readinessProbe:
     path: /health/readiness

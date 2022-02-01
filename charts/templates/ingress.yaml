@@ -3,50 +3,78 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Values.name | default .Release.Name }}
+{{- if or .Values.argocd_ingress_annotations .Values.ingress.vanity_ingress_url }}
+  annotations:
+{{- if .Values.argocd_ingress_annotations }}
+{{ toYaml .Values.argocd_ingress_annotations | indent 4 }}
+{{- end }}
+{{- if .Values.ingress.vanity_ingress_url }}
+    external-dns.alpha.kubernetes.io/hostname: {{ template "customDomainList" . }}
+    external-dns.alpha.kubernetes.io/ingress-hostname-source: annotation-only
+{{- end }}
+{{- end }}
   labels:
-    app.kubernetes.io/name: {{ .Release.Name }}
+    app.kubernetes.io/name: {{ .Values.name | default .Release.Name }}
     app.kubernetes.io/instance: mysql-abcxzy
     app.kubernetes.io/version: {{ .Chart.appVersion }}
     app.kubernetes.io/project: "CI/CD Engineering"
     app.kubernetes.io/managed-by: helm
     app.kubernetes.io/created-by: controller-manager
-    vtx-cfs/stack: green
-    vtx-cfs/environment: dev
-    vtx-cfs/status: live
-{{- if .Values.argocd_ingress_annotations }}
-  annotations:
-{{ toYaml .Values.argocd_ingress_annotations | indent 4 }}
-{{- end }}
+    vtx-cfs/stack: {{ .Values.stack }}
+    vtx-cfs/environment: {{ .Values.environment }}
+    vtx-cfs/status: {{ .Values.status }}
 spec:
   rules:
-    - host: {{ .Release.Name }}-{{ .Values.env }}.{{ .Values.dns_suffix }}
+    - host: {{ .Values.name | default .Release.Name }}-{{ .Values.env }}.{{ .Values.dns_suffix }}
       http:
         paths:
-          - path: {{ .Values.ingress.path }}
-            pathType: {{ .Values.ingress.pathtype }}
+          - pathType: {{ .Values.ingress.pathtype }}
             backend:
               service:
-                name: {{ .Release.Name }}
+                name: {{ .Values.name | default .Release.Name }}
                 port:
                   number: {{ .Values.service.externalPort }}
-{{- if .Values.ingress.use_vanity_ingress }}
-    - host: {{ .Release.Name }}.{{ .Values.dns_suffix }}
+    - host: {{ .Values.app_name }}-{{ template "trim-stack" . }}.{{ .Values.dns_suffix }}
       http:
         paths:
-          - path: {{ .Values.ingress.path }}
-            pathType: {{ .Values.ingress.pathtype }}
+          - pathType: {{ .Values.ingress.pathtype }}
             backend:
               service:
-                name: {{ .Release.Name }}
+                name: {{ .Values.app_name }}
+                port:
+                  number: {{ .Values.service.externalPort }}
+{{- if .Values.ingress.vanity_ingress_url }}
+    - host: {{ .Values.ingress.vanity_ingress_url }}
+      http:
+        paths:
+          - pathType: {{ .Values.ingress.pathtype }}
+            backend:
+              service:
+                name: {{ .Values.app_name }}
+                port:
+                  number: {{ .Values.service.externalPort }}
+{{- end }}
+{{- if .Values.ingress.public_ingress_url }}
+    - host: {{ .Values.ingress.public_ingress_url }}
+      http:
+        paths:
+          - pathType: {{ .Values.ingress.pathtype }}
+            backend:
+              service:
+                name: {{ .Values.app_name }}
                 port:
                   number: {{ .Values.service.externalPort }}
 {{- end }}
 {{ if .Values.ingress.tls }}
   tls:
     - hosts:
-      - {{ .Release.Name }}-{{ .Values.env }}.{{ .Values.dns_suffix }}
-{{- if .Values.ingress.use_vanity_ingress }}
-      - {{ .Release.Name }}.{{ .Values.dns_suffix }}
+      - {{ .Values.app_name }}-{{ .Values.env }}.{{ .Values.dns_suffix }}
+      - {{ .Values.app_name }}-{{ template "trim-stack" . }}.{{ .Values.dns_suffix }}
+{{- if .Values.ingress.vanity_ingress_url }}
+      - {{ .Values.ingress.vanity_ingress_url }}
+{{- end }}
+{{- if .Values.ingress.public_ingress_url }}
+      - {{ .Values.ingress.public_ingress_url }}
 {{- end }}
 {{ end }}
 {{- end }}
