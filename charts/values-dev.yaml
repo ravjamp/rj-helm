@@ -1,3 +1,4 @@
+app_name: cfs_permissions_service
 dns_suffix: platdev.vtxdev.net
 environment: dev
 ingress:

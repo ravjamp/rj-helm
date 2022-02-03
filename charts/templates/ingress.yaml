@@ -2,7 +2,9 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ .Values.name | default .Release.Name }}
+  name: {{ .Values.app_name }}
+  labels:
+    {{- include "commonLabels" . | nindent 4 }}
 {{- if or .Values.argocd_ingress_annotations .Values.ingress.vanity_ingress_url }}
   annotations:
 {{- if .Values.argocd_ingress_annotations }}
@@ -13,25 +15,15 @@ metadata:
     external-dns.alpha.kubernetes.io/ingress-hostname-source: annotation-only
 {{- end }}
 {{- end }}
-  labels:
-    app.kubernetes.io/name: {{ .Values.name | default .Release.Name }}
-    app.kubernetes.io/instance: mysql-abcxzy
-    app.kubernetes.io/version: {{ .Chart.appVersion }}
-    app.kubernetes.io/project: "CI/CD Engineering"
-    app.kubernetes.io/managed-by: helm
-    app.kubernetes.io/created-by: controller-manager
-    vtx-cfs/stack: {{ .Values.stack }}
-    vtx-cfs/environment: {{ .Values.environment }}
-    vtx-cfs/status: {{ .Values.status }}
 spec:
   rules:
-    - host: {{ .Values.name | default .Release.Name }}-{{ .Values.env }}.{{ .Values.dns_suffix }}
+    - host: {{ .Values.app_name }}-{{ .Values.env }}.{{ .Values.dns_suffix }}
       http:
         paths:
           - pathType: {{ .Values.ingress.pathtype }}
             backend:
               service:
-                name: {{ .Values.name | default .Release.Name }}
+                name: {{ .Values.app_name }}
                 port:
                   number: {{ .Values.service.externalPort }}
     - host: {{ .Values.app_name }}-{{ template "trim-stack" . }}.{{ .Values.dns_suffix }}

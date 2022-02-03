@@ -1,31 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.name | default .Release.Name }}
+  name: {{ .Values.app_name }}
   labels:
-    app.kubernetes.io/name: {{ .Values.name | default .Release.Name }}
-    app.kubernetes.io/instance: mysql-abcxzy
-    app.kubernetes.io/version: {{ .Chart.appVersion }}
-    app.kubernetes.io/project: "CI/CD Engineering"
-    app.kubernetes.io/managed-by: helm
-    app.kubernetes.io/created-by: controller-manager
-    vtx-cfs/stack: {{ .Values.stack }}
-    vtx-cfs/environment: {{ .Values.environment }}
-    vtx-cfs/status: {{ .Values.status }}
+    application: {{ .Values.app_name }}
+    {{- include "commonLabels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: {{ .Values.app_name }}
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: {{ .Values.app_name }}
     spec:
-      serviceAccountname: {{ .Release.Name }}
+      serviceAccountname: {{ .Values.app_name }}
       imagePullSecrets:
         - name: artifactory-cred
       containers:
-        - name: {{ default .Release.Name }}
+        - name: {{ .Values.app_name }}
           image: "{{ .Values.cfs_permissions_service.image.repository }}:{{ default .Chart.appVersion .Values.image_tag }}"
           ports:
           - containerPort: {{ .Values.service.internalPort }}
@@ -57,12 +50,12 @@ spec:
             valueFrom:
               secretKeyRef:
                 key:  username
-                name: {{ .Values.name | default .Release.Name }}-auth
+                name: {{ .Values.app_name }}-auth
           - name: "DATABASE_PASSWORD"
             valueFrom:
               secretKeyRef:
                 key:  password
-                name: {{ .Values.name | default .Release.Name }}-auth
+                name: {{ .Values.app_name }}-auth
           - name: "DATABASE_CONNECTION"
             value: {{ .Values.database.connection }}
           - name: "TEST_ENVIRONMENTS" #  If needed
